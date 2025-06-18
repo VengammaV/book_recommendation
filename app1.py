@@ -14,13 +14,13 @@ from sentence_transformers import SentenceTransformer
 # ----------------------
 @st.cache_resource
 def load_data():
-    df, embeddings= joblib.load("C:/Users/Harish/Desktop/GUVI/FifthProject/bookdata_combined_embeddings.pkl")
+    df, embeddings= joblib.load("bookdata_combined_embeddings.pkl")
     df = df.reset_index(drop=True)
     return df, embeddings
 
 df, combined_embeddings = load_data()
-description_embeddings = joblib.load("C:/Users/Harish/Desktop/GUVI/FifthProject/description_embeddings.pkl")
-model = SentenceTransformer("C:/Users/Harish/Desktop/GUVI/FifthProject/saved_models/sentence_model")
+description_embeddings = joblib.load("description_embeddings.pkl")
+model = SentenceTransformer("saved_models/sentence_model")
 
 # ----------------------
 # Cosine similarity matrix

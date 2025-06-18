@@ -5,8 +5,8 @@ matplotlib-inline==0.1.6
 seaborn==0.13.2
 regex==2024.11.6
 spacy==3.8.5
-en_core_web_sm==3.8.0
 scikit-learn==1.6.1
 streamlit==1.45.1
-sentence-transformers==4.1.0
+sentence-transformers==2.6.1
+torch==2.3.0
 joblib==1.4.2
