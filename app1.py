@@ -5,8 +5,10 @@ import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 import spacy
 from sentence_transformers import SentenceTransformer
+
 
 # ----------------------
 # Load data and embeddings
@@ -117,12 +119,16 @@ def hybrid_recommender(book_title, top_n=5):
     return df.loc[content_idx], df.iloc[hybrid_indices][['book_name', 'author', 'genre', 'rating']]
 
 # load english language model and create nlp object from it
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    from spacy.cli import download
-    download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+@st.cache_resource
+def load_spacy_model():
+    try:
+        return spacy.load("en_core_web_sm")
+    except OSError:
+        # Download model only if not present
+        from spacy.cli import download
+        download("en_core_web_sm")
+        return spacy.load("en_core_web_sm")
+nlp = load_spacy_model()
 #use this utility function to get the preprocessed text data
 def preprocess(text):
     if pd.isna(text):  # Handles NaN or None safely
