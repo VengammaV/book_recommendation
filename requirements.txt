@@ -4,7 +4,7 @@ matplotlib==3.10.1
 matplotlib-inline==0.1.6
 seaborn==0.13.2
 regex==2024.11.6
-spacy==3.8.5
+spacy==3.7.4
 scikit-learn==1.6.1
 streamlit==1.45.1
 sentence-transformers==4.1.0
