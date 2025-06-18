@@ -21,7 +21,7 @@ def load_data():
 
 df, combined_embeddings = load_data()
 description_embeddings = joblib.load("description_embeddings.pkl")
-model = SentenceTransformer("saved_models/sentence_model")
+model = SentenceTransformer("saved_models/sentence_model", device='cpu')
 
 # ----------------------
 # Cosine similarity matrix
