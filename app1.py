@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import os
 import spacy
 from sentence_transformers import SentenceTransformer
+from rapidfuzz import process, fuzz
 
 
 # ----------------------
@@ -35,12 +36,19 @@ cosine_sim_matrix = compute_similarity_matrix(combined_embeddings)
 # ----------------------
 # Book index by name
 # ----------------------
+#def get_book_index(title):
+#    title = title.lower()
+#    matches = df[df['book_name'].str.lower() == title]
+#    if matches.empty:
+#        return None
+#    return matches.index[0]
+
 def get_book_index(title):
     title = title.lower()
-    matches = df[df['book_name'].str.lower() == title]
-    if matches.empty:
+    choices = df['book_name'].str.lower().tolist()
+    best_match = process.extractOne(title, choices, scorer=fuzz.token_sort_ratio)
+    if best_match is None or best_match[1] < 70:
         return None
-    return matches.index[0]
 
 # ----------------------
 # Recommender Functions
@@ -52,7 +60,9 @@ def cluster_recommender(book_title, top_n=5):
         return None, None
     cluster = df.loc[idx, 'cluster_label']
     cluster_books = df[(df['cluster_label'] == cluster) & (df.index != idx)]
-    return df.loc[idx], cluster_books.sample(min(top_n, len(cluster_books)))[['book_name', 'author', 'genre', 'rating']]
+    # Sort by rating (descending) and take top N
+    top_books = cluster_books.sort_values(by='rating', ascending=False).head(top_n)
+    return df.loc[idx], top_books[['book_name', 'author', 'genre', 'rating']]
 
 def genre_cluster_recommender(df, selected_genre, top_n=10):
     # Step 1: Filter books by the selected genre
@@ -177,10 +187,10 @@ if page == "Content-Based Filter":
                     
                     # Use combined embeddings:
                     # Get the corresponding description as blank
-                    desc_input = " "  # or use st.text_area for description
+                    desc_input = " "  
                     desc_embedding = model.encode(desc_input)
-                    # Combine title + desc embeddings like you did earlier
-                    #input_combined = np.hstack([title_embedding, desc_embedding]).reshape(1, -1)
+                    # Combine title + desc embeddings 
+
                     input_combined = np.hstack([
                         title_embedding.reshape(1, -1),
                         desc_embedding.reshape(1, -1)
