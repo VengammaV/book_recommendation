@@ -5,24 +5,23 @@ import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os
 import spacy
+import en_core_web_sm
 from sentence_transformers import SentenceTransformer
 from rapidfuzz import process, fuzz
-
 
 # ----------------------
 # Load data and embeddings
 # ----------------------
 @st.cache_resource
 def load_data():
-    df, embeddings= joblib.load("bookdata_combined_embeddings.pkl")
+    df, embeddings= joblib.load("C:/Users/Harish/Desktop/GUVI/FifthProject/bookdata_combined_embeddings.pkl")
     df = df.reset_index(drop=True)
     return df, embeddings
 
 df, combined_embeddings = load_data()
-description_embeddings = joblib.load("description_embeddings.pkl")
-model = SentenceTransformer("saved_models/sentence_model", device='cpu')
+description_embeddings = joblib.load("C:/Users/Harish/Desktop/GUVI/FifthProject/description_embeddings.pkl")
+model = SentenceTransformer("C:/Users/Harish/Desktop/GUVI/FifthProject/saved_models/sentence_model")
 
 # ----------------------
 # Cosine similarity matrix
@@ -46,9 +45,15 @@ cosine_sim_matrix = compute_similarity_matrix(combined_embeddings)
 def get_book_index(title):
     title = title.lower()
     choices = df['book_name'].str.lower().tolist()
+    
     best_match = process.extractOne(title, choices, scorer=fuzz.token_sort_ratio)
+
     if best_match is None or best_match[1] < 70:
         return None
+
+    matched_title = best_match[0]
+    match_index = df[df['book_name'].str.lower() == matched_title].index[0]
+    return match_index
 
 # ----------------------
 # Recommender Functions
@@ -59,6 +64,7 @@ def cluster_recommender(book_title, top_n=5):
     if idx is None:
         return None, None
     cluster = df.loc[idx, 'cluster_label']
+    # Exclude the selected book and filter books in the same cluster
     cluster_books = df[(df['cluster_label'] == cluster) & (df.index != idx)]
     # Sort by rating (descending) and take top N
     top_books = cluster_books.sort_values(by='rating', ascending=False).head(top_n)
@@ -130,17 +136,6 @@ def hybrid_recommender(book_title, top_n=5):
 
 # load english language model and create nlp object from it
 nlp = spacy.load("en_core_web_sm") 
-
-#def load_spacy_model():
-#    try:
-#        return spacy.load("en_core_web_sm")
-#    except OSError:
-#       from spacy.cli import download
-#       download("en_core_web_sm")
-#       return spacy.load("en_core_web_sm")
-#nlp = load_spacy_model()
-
-
 #use this utility function to get the preprocessed text data
 def preprocess(text):
     if pd.isna(text):  # Handles NaN or None safely
@@ -187,10 +182,10 @@ if page == "Content-Based Filter":
                     
                     # Use combined embeddings:
                     # Get the corresponding description as blank
-                    desc_input = " "  
+                    desc_input = " "  # or use st.text_area for description
                     desc_embedding = model.encode(desc_input)
-                    # Combine title + desc embeddings 
-
+                    # Combine title + desc embeddings like you did earlier
+                    #input_combined = np.hstack([title_embedding, desc_embedding]).reshape(1, -1)
                     input_combined = np.hstack([
                         title_embedding.reshape(1, -1),
                         desc_embedding.reshape(1, -1)
